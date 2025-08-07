@@ -25,6 +25,8 @@
   "include": [
     "src/**/*.ts",
     "test/**/*.ts",
-    "webpack-hmr.config.js"
+    "webpack-hmr.config.js",
+    "env-path.js",
+    "db/**/*.ts"
   ]
 }
