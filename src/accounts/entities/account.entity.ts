@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
 
 export type AccountDocument = HydratedDocument<Account>;
 
@@ -22,6 +22,11 @@ export class Account {
 
   @Prop()
   avatarUrl?: string;
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'FlashcardSet' }],
+  })
+  flashcardSets: mongoose.Types.ObjectId[];
 }
 
 export const AccountSchema = SchemaFactory.createForClass(Account);
