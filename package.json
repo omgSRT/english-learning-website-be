@@ -10,7 +10,7 @@
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start --env-file .env.development",
     "start:dev": "nest start --watch --webpackPath webpack-hmr.config.js --watch --env-file .env.development",
-    "start:production": "nest start --watch --webpackPath webpack-hmr.config.js --watch",
+    "start:production": "SET NODE_ENV=production & node dist/main.js",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
