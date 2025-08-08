@@ -4,7 +4,7 @@ import { UpdateAccountDto } from './dto/update-account.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Account, AccountDocument } from './entities/account.entity';
 import { Model } from 'mongoose';
-import { SignupDto } from 'src/common/dto/signup.dto';
+import { SignupDto } from '../common/dto/signup.dto';
 
 @Injectable()
 export class AccountsService {
