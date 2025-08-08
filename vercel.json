@@ -20,19 +20,16 @@
       "dest": "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.min.js"
     },
     {
+      "src": "/api-docs/swagger-ui-init.js",
+      "dest": "app.js"
+    },
+    {
+      "src": "/api-docs.json",
+      "dest": "app.js"
+    },
+    {
       "src": "/(.*)",
-      "dest": "src/main.ts",
-      "methods": [
-        "GET",
-        "POST",
-        "PUT",
-        "PATCH",
-        "OPTIONS",
-        "DELETE",
-        "HEAD",
-        "CONNECT",
-        "TRACE"
-      ]
+      "dest": "app.js"
     }
   ]
 }
