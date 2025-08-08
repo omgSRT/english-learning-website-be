@@ -21,15 +21,26 @@
     },
     {
       "src": "/api-docs/swagger-ui-init.js",
-      "dest": "app.js"
+      "dest": "src/main.ts"
     },
     {
       "src": "/api-docs.json",
-      "dest": "app.js"
+      "dest": "src/main.ts"
     },
     {
       "src": "/(.*)",
-      "dest": "app.js"
+      "dest": "src/main.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE",
+        "HEAD",
+        "CONNECT",
+        "TRACE"
+      ]
     }
   ]
 }
