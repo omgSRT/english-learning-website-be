@@ -4,6 +4,7 @@ import { UpdateAccountDto } from './dto/update-account.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Account, AccountDocument } from './entities/account.entity';
 import { Model } from 'mongoose';
+import { SignupDto } from 'src/common/dto/signup.dto';
 
 @Injectable()
 export class AccountsService {
@@ -26,7 +27,22 @@ export class AccountsService {
       throw new BadRequestException('Username Already Exists');
     }
 
-    const newAccount = await this.accountModel.create(createAccountDto);
+    if (createAccountDto.password !== createAccountDto.confirmPassword) {
+      throw new BadRequestException('Passwords Do Not Match');
+    }
+
+    const newAccount = (
+      await this.accountModel.create(createAccountDto)
+    ).toObject();
+    return newAccount;
+  }
+
+  async createAccountFromSignup(signupDto: SignupDto): Promise<Account | null> {
+    if (signupDto === null) {
+      return null;
+    }
+
+    const newAccount = (await this.accountModel.create(signupDto)).toObject();
     return newAccount;
   }
 
@@ -46,22 +62,18 @@ export class AccountsService {
     return `This action removes a #${id} account`;
   }
 
-  async findOneByEmail(email: string): Promise<Account | null> {
-    const accountFoundByEmail = await this.accountModel.findOne({
-      email: email,
-    });
-    if (accountFoundByEmail) {
-      return accountFoundByEmail;
-    }
-    return null;
+  async findOneByEmail(email: string): Promise<AccountDocument | null> {
+    return await this.accountModel
+      .findOne({
+        email: email,
+      })
+      .exec();
   }
-  async findOneByUsername(username: string): Promise<Account | null> {
-    const accountFoundByUsername = await this.accountModel.findOne({
-      username: username,
-    });
-    if (accountFoundByUsername) {
-      return accountFoundByUsername;
-    }
-    return null;
+  async findOneByUsername(username: string): Promise<AccountDocument | null> {
+    return await this.accountModel
+      .findOne({
+        username: username,
+      })
+      .exec();
   }
 }
