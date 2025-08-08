@@ -6,6 +6,8 @@ import { ConfigModule } from '@nestjs/config';
 
 import envConfiguration from './config/env-configuration';
 import { mongooseModuleAsyncOptions } from './db/data-source';
+import { AccountsModule } from './accounts/accounts.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import { mongooseModuleAsyncOptions } from './db/data-source';
       isGlobal: true,
     }),
     MongooseModule.forRootAsync(mongooseModuleAsyncOptions),
+    AccountsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

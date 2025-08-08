@@ -26,7 +26,6 @@
     "src/**/*.ts",
     "test/**/*.ts",
     "webpack-hmr.config.js",
-    "env-path.js",
-    "db/**/*.ts"
+    "env-path.js"
   ]
 }
