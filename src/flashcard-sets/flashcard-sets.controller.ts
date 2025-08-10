@@ -11,7 +11,7 @@ import {
 import { FlashcardSetsService } from './flashcard-sets.service';
 import { CreateFlashcardSetDto } from './dto/create-flashcard-set.dto';
 import { UpdateFlashcardSetDto } from './dto/update-flashcard-set.dto';
-import { User } from 'src/common/decorator/user.decorator';
+import { User } from '../common/decorator/user.decorator';
 
 @Controller('flashcard-sets')
 export class FlashcardSetsController {
