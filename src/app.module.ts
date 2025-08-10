@@ -11,6 +11,7 @@ import { AuthModule } from './auth/auth.module';
 import { FlashcardsModule } from './flashcards/flashcards.module';
 import { FlashcardSetsModule } from './flashcard-sets/flashcard-sets.module';
 import { CommentsModule } from './comments/comments.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { CommentsModule } from './comments/comments.module';
     FlashcardsModule,
     FlashcardSetsModule,
     CommentsModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
