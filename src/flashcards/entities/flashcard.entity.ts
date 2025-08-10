@@ -6,8 +6,8 @@ export type FlashcardDocument = HydratedDocument<Flashcard>;
 
 @Schema({ timestamps: true })
 export class Flashcard {
-  @Prop({ required: true })
-  flashcardType: FlashcardTypeEnum;
+  @Prop({ required: true, default: FlashcardTypeEnum.VOCABULARY })
+  flashcardType: string;
 
   @Prop({
     required: true,

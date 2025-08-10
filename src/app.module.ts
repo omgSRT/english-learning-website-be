@@ -8,7 +8,6 @@ import envConfiguration from './config/env-configuration';
 import { mongooseModuleAsyncOptions } from './db/data-source';
 import { AccountsModule } from './accounts/accounts.module';
 import { AuthModule } from './auth/auth.module';
-import { FlashcardSetModule } from './flashcard-set/flashcard-set.module';
 import { FlashcardsModule } from './flashcards/flashcards.module';
 import { FlashcardSetsModule } from './flashcard-sets/flashcard-sets.module';
 import { CommentsModule } from './comments/comments.module';
@@ -23,7 +22,7 @@ import { CommentsModule } from './comments/comments.module';
     MongooseModule.forRootAsync(mongooseModuleAsyncOptions),
     AccountsModule,
     AuthModule,
-    FlashcardSetModule,
+    FlashcardSetsModule,
     FlashcardsModule,
     FlashcardSetsModule,
     CommentsModule,

@@ -15,17 +15,16 @@ export class FlashcardSet {
 
   @Prop({
     required: true,
+    default: 0,
   })
   likes: number;
-
-  @Prop()
-  avatarUrl?: string;
 
   @Prop({ types: mongoose.Schema.Types.ObjectId, ref: 'Account' })
   account: mongoose.Types.ObjectId;
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'FlashcardSet' }],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Flashcard' }],
+    default: [],
   })
   flashcards: mongoose.Types.ObjectId[];
 }
