@@ -11,19 +11,26 @@ import {
   FlashcardSet,
   FlashcardSetDocument,
 } from './entities/flashcard-set.entity';
-import { DeleteResult, Model, UpdateResult } from 'mongoose';
+import { DeleteResult, Model, Types, UpdateResult } from 'mongoose';
+import { AccountsService } from 'src/accounts/accounts.service';
 
 @Injectable()
 export class FlashcardSetsService {
   constructor(
     @InjectModel(FlashcardSet.name)
     private readonly flashcardSetModel: Model<FlashcardSetDocument>,
+    private readonly accountService: AccountsService,
   ) {}
 
   async create(
     createFlashcardSetDto: CreateFlashcardSetDto,
     user: any,
   ): Promise<FlashcardSet> {
+    const account = await this.accountService.findOne(user.accountId);
+    if (!account) {
+      throw new NotFoundException(`Account Not Found`);
+    }
+
     const existingFlashcardSet = await this.flashcardSetModel.findOne({
       title: createFlashcardSetDto.title,
       account: user.accountId,
@@ -82,8 +89,8 @@ export class FlashcardSetsService {
     };
   }
 
-  async findOne(id: string): Promise<FlashcardSet> {
-    const flashcardSet: FlashcardSet | null = await this.flashcardSetModel
+  async findOne(id: string) {
+    const flashcardSet = await this.flashcardSetModel
       .findById(id)
       .populate('account', 'username avatarUrl')
       .lean()
@@ -92,11 +99,14 @@ export class FlashcardSetsService {
       throw new NotFoundException(`Flashcard Set with ID ${id} not found`);
     }
 
-    return flashcardSet;
+    return flashcardSet.toObject();
   }
 
   async update(id: string, updateFlashcardSetDto: UpdateFlashcardSetDto) {
     const flashcardSet = await this.findOne(id);
+
+    updateFlashcardSetDto.description =
+      updateFlashcardSetDto.description ?? flashcardSet.description;
 
     const result: UpdateResult = await this.flashcardSetModel.updateOne(
       { _id: id },

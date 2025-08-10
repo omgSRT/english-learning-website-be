@@ -19,9 +19,6 @@ export class Flashcard {
   })
   definition: string;
 
-  @Prop()
-  example?: string;
-
   @Prop({ types: mongoose.Schema.Types.ObjectId, ref: 'FlashcardSet' })
   flashcardSet: mongoose.Types.ObjectId;
 }

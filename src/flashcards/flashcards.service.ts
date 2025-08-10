@@ -1,26 +1,136 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateFlashcardDto } from './dto/create-flashcard.dto';
 import { UpdateFlashcardDto } from './dto/update-flashcard.dto';
+import { Flashcard, FlashcardDocument } from './entities/flashcard.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import { DeleteResult, Model, UpdateResult } from 'mongoose';
+import { FlashcardSetsService } from 'src/flashcard-sets/flashcard-sets.service';
+import { FlashcardTypeEnum } from './entities/enum/flashcard.enum';
 
 @Injectable()
 export class FlashcardsService {
-  create(createFlashcardDto: CreateFlashcardDto) {
-    return 'This action adds a new flashcard';
+  constructor(
+    @InjectModel(Flashcard.name)
+    private readonly flashcardModel: Model<FlashcardDocument>,
+    private readonly flashcardSetService: FlashcardSetsService,
+  ) {}
+
+  async create(
+    createFlashcardDto: CreateFlashcardDto,
+    user: any,
+  ): Promise<Flashcard> {
+    const flashcardSet = await this.flashcardSetService.findOne(
+      createFlashcardDto.flashcardSetId,
+    );
+    if (!flashcardSet) {
+      throw new NotFoundException('Flashcard Set Not Found');
+    }
+    if (user.accountId !== flashcardSet.account.toHexString()) {
+      throw new BadRequestException(
+        'You Are Not The Author Of This Flashcard Set',
+      );
+    }
+
+    if (!createFlashcardDto.flashcardType) {
+      createFlashcardDto.flashcardType = FlashcardTypeEnum.VOCABULARY;
+    }
+
+    const newFlashcard = (
+      await this.flashcardModel.create({
+        ...createFlashcardDto,
+        flashcardSet: flashcardSet._id,
+      })
+    ).toObject();
+    return newFlashcard;
   }
 
-  findAll() {
-    return `This action returns all flashcards`;
+  async findAll(
+    page: number,
+    limit: number,
+  ): Promise<{
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+    previousPage: number | null;
+    nextPage: number | null;
+    items: Flashcard[];
+  }> {
+    const skip = (page - 1) * limit;
+    const total = await this.flashcardModel.countDocuments();
+    const totalPages = Math.ceil(total / limit);
+
+    const items: Flashcard[] = await this.flashcardModel
+      .find()
+      .skip(skip)
+      .limit(limit)
+      .populate('account', 'username avatarUrl')
+      .lean()
+      .exec();
+
+    return {
+      total,
+      page,
+      limit,
+      totalPages,
+      hasPreviousPage: page > 1,
+      hasNextPage: page < totalPages,
+      previousPage: page > 1 ? page - 1 : null,
+      nextPage: page < totalPages ? page + 1 : null,
+      items,
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} flashcard`;
+  async findOne(id: string) {
+    const flashcard = await this.flashcardModel.findById(id).lean().exec();
+    if (!flashcard) {
+      throw new NotFoundException(`Flashcard Set with ID ${id} not found`);
+    }
+
+    return flashcard.toObject();
   }
 
-  update(id: number, updateFlashcardDto: UpdateFlashcardDto) {
-    return `This action updates a #${id} flashcard`;
+  async update(id: string, updateFlashcardDto: UpdateFlashcardDto) {
+    const flashcard = await this.findOne(id);
+
+    for (const key in updateFlashcardDto) {
+      if (
+        (updateFlashcardDto[key] === '' ||
+          updateFlashcardDto[key] === null ||
+          updateFlashcardDto[key] === undefined) &&
+        key in flashcard
+      ) {
+        updateFlashcardDto[key] = flashcard[key];
+      }
+    }
+
+    const result: UpdateResult = await this.flashcardModel.updateOne(
+      { _id: id },
+      { $set: updateFlashcardDto },
+    );
+    if (!result.acknowledged) {
+      throw new InternalServerErrorException('Flashcard Update Failed');
+    }
+
+    return result;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} flashcard`;
+  async remove(id: string): Promise<DeleteResult> {
+    const flashcard = await this.findOne(id);
+
+    const result: DeleteResult = await this.flashcardModel.deleteOne(flashcard);
+
+    if (!result.acknowledged) {
+      throw new InternalServerErrorException('Flashcard Deletion Failed');
+    }
+
+    return result;
   }
 }

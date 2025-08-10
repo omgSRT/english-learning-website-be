@@ -6,12 +6,14 @@ import {
   FlashcardSetSchema,
 } from './entities/flashcard-set.entity';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AccountsModule } from '../accounts/accounts.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: FlashcardSet.name, schema: FlashcardSetSchema },
     ]),
+    AccountsModule,
   ],
   controllers: [FlashcardSetsController],
   providers: [FlashcardSetsService],

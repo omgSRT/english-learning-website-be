@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -50,8 +54,19 @@ export class AccountsService {
     return `This action returns all accounts`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} account`;
+  async findOne(id: string) {
+    const account = await this.accountModel
+      .findById(id)
+      .populate('account', 'username avatarUrl')
+      .lean()
+      .exec();
+    if (!account) {
+      throw new NotFoundException(`Account with ID ${id} not found`);
+    }
+
+    const { password, ...omittedAccount } = account.toObject();
+
+    return omittedAccount;
   }
 
   update(id: number, updateAccountDto: UpdateAccountDto) {

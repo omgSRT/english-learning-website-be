@@ -27,6 +27,12 @@ export class FlashcardSet {
     default: [],
   })
   flashcards: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
+    default: [],
+  })
+  comments: mongoose.Types.ObjectId[];
 }
 
 export const FlashcardSetSchema = SchemaFactory.createForClass(FlashcardSet);

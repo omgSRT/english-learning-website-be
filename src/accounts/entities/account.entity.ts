@@ -25,6 +25,7 @@ export class Account {
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'FlashcardSet' }],
+    default: [],
   })
   flashcardSets: mongoose.Types.ObjectId[];
 }
