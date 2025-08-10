@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
@@ -92,13 +93,22 @@ export class CommentsService {
   async update(
     id: string,
     updateCommentDto: UpdateCommentDto,
+    user: any,
   ): Promise<UpdateResult | undefined> {
+    const account = await this.accountService.findOne(user.accountId);
+    if (!account) {
+      throw new NotFoundException('Account Not Found');
+    }
+
     const comment = await this.findOne(id);
 
     updateCommentDto.content = updateCommentDto.content ?? comment.content;
 
     if (updateCommentDto.content === comment.content) {
       return;
+    }
+    if (account._id !== comment.account) {
+      throw new UnauthorizedException('Only Author Can Delete This Comment');
     }
 
     const result: UpdateResult = await this.commentModel.updateOne(
@@ -112,8 +122,17 @@ export class CommentsService {
     return result;
   }
 
-  async remove(id: string): Promise<DeleteResult> {
+  async remove(id: string, user: any): Promise<DeleteResult> {
+    const account = await this.accountService.findOne(user.accountId);
+    if (!account) {
+      throw new NotFoundException('Account Not Found');
+    }
+
     const comment = await this.findOne(id);
+
+    if (account._id !== comment.account) {
+      throw new UnauthorizedException('Only Author Can Delete This Comment');
+    }
 
     const result: DeleteResult = await this.commentModel.deleteOne(comment);
     if (!result.acknowledged) {

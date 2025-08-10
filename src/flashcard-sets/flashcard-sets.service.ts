@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateFlashcardSetDto } from './dto/create-flashcard-set.dto';
 import { UpdateFlashcardSetDto } from './dto/update-flashcard-set.dto';
@@ -102,11 +103,24 @@ export class FlashcardSetsService {
     return flashcardSet.toObject();
   }
 
-  async update(id: string, updateFlashcardSetDto: UpdateFlashcardSetDto) {
+  async update(
+    id: string,
+    updateFlashcardSetDto: UpdateFlashcardSetDto,
+    user: any,
+  ) {
+    const account = await this.accountService.findOne(user.accountId);
+    if (!account) {
+      throw new NotFoundException('Account Not Found');
+    }
+
     const flashcardSet = await this.findOne(id);
 
     updateFlashcardSetDto.description =
       updateFlashcardSetDto.description ?? flashcardSet.description;
+
+    if (account._id !== flashcardSet.account) {
+      throw new UnauthorizedException('Only Author Can Delete This Comment');
+    }
 
     const result: UpdateResult = await this.flashcardSetModel.updateOne(
       { _id: id },
@@ -120,8 +134,17 @@ export class FlashcardSetsService {
     return result;
   }
 
-  async remove(id: string): Promise<DeleteResult> {
+  async remove(id: string, user: any): Promise<DeleteResult> {
+    const account = await this.accountService.findOne(user.accountId);
+    if (!account) {
+      throw new NotFoundException('Account Not Found');
+    }
+
     const flashcardSet: FlashcardSet | null = await this.findOne(id);
+
+    if (account._id !== flashcardSet.account) {
+      throw new UnauthorizedException('Only Author Can Delete This Comment');
+    }
 
     const result: DeleteResult =
       await this.flashcardSetModel.deleteOne(flashcardSet);

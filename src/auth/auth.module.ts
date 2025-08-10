@@ -5,6 +5,7 @@ import { authConstants } from './constant/auth.constant';
 import { JwtStrategy } from './jwt/jwt.strategy';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { ConfigService } from '@nestjs/config';
 @Module({
   imports: [
     AccountsModule,
@@ -15,6 +16,7 @@ import { AuthService } from './auth.service';
         expiresIn: authConstants.jwtExpiresIn,
       },
     }),
+    ConfigService,
   ],
   providers: [JwtStrategy, AuthService],
   controllers: [AuthController],
