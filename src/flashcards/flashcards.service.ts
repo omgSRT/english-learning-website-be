@@ -46,6 +46,7 @@ export class FlashcardsService {
         flashcardSet: flashcardSet._id,
       })
     ).toObject();
+    flashcardSet.flashcards.push(newFlashcard._id);
     return newFlashcard;
   }
 
@@ -125,10 +126,21 @@ export class FlashcardsService {
   async remove(id: string): Promise<DeleteResult> {
     const flashcard = await this.findOne(id);
 
+    const flashcardSet = await this.flashcardSetService.findOne(
+      flashcard._id.toHexString(),
+    );
+    if (!flashcardSet) {
+      throw new NotFoundException('Flashcard Set Not Found');
+    }
+
     const result: DeleteResult = await this.flashcardModel.deleteOne(flashcard);
 
     if (!result.acknowledged) {
       throw new InternalServerErrorException('Flashcard Deletion Failed');
+    }
+    const index = flashcardSet.flashcards.indexOf(flashcard._id);
+    if (index > -1) {
+      flashcardSet.flashcards.splice(index, 1);
     }
 
     return result;

@@ -39,6 +39,7 @@ export class CommentsService {
       account: account._id,
       flashcardSet: flashcardSet._id,
     });
+    flashcardSet.comments.push(newComment._id);
     return newComment.toObject();
   }
 
@@ -133,10 +134,20 @@ export class CommentsService {
     if (account._id !== comment.account) {
       throw new UnauthorizedException('Only Author Can Delete This Comment');
     }
+    const flashcardSet = await this.flashcardSetService.findOne(
+      comment.flashcardSet.toHexString(),
+    );
+    if (!flashcardSet) {
+      throw new NotFoundException('Flashcard Set Not Found');
+    }
 
     const result: DeleteResult = await this.commentModel.deleteOne(comment);
     if (!result.acknowledged) {
       throw new BadRequestException('Comment Deletion Failed');
+    }
+    const index = flashcardSet.comments.indexOf(comment._id);
+    if (index > -1) {
+      flashcardSet.comments.splice(index, 1);
     }
 
     return result;

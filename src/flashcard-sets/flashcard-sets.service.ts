@@ -48,6 +48,7 @@ export class FlashcardSetsService {
         account: user.accountId,
       })
     ).toObject();
+    account.flashcardSets.push(newFlashcardSet._id);
     return newFlashcardSet;
   }
 
@@ -140,10 +141,13 @@ export class FlashcardSetsService {
       throw new NotFoundException('Account Not Found');
     }
 
-    const flashcardSet: FlashcardSet | null = await this.findOne(id);
+    const flashcardSet = await this.findOne(id);
 
     if (account._id !== flashcardSet.account) {
       throw new UnauthorizedException('Only Author Can Delete This Comment');
+    }
+    if (flashcardSet === null) {
+      throw new NotFoundException('Flashcard Set Not Found');
     }
 
     const result: DeleteResult =
@@ -151,6 +155,10 @@ export class FlashcardSetsService {
 
     if (!result.acknowledged) {
       throw new InternalServerErrorException('Flashcard Set Deletion Failed');
+    }
+    const index = account.flashcardSets.indexOf(flashcardSet._id);
+    if (index > -1) {
+      account.flashcardSets.splice(index, 1);
     }
 
     return result;
