@@ -75,6 +75,7 @@ export class FlashcardSetsService {
       .skip(skip)
       .limit(limit)
       .populate('account', 'username avatarUrl')
+      .populate('flashcards', 'id flashcardType term definition')
       .lean()
       .exec();
 
