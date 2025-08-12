@@ -16,18 +16,21 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 import { User } from '../common/decorator/user.decorator';
 import type { Response } from 'express';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('comments')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Post()
   create(@Body() createCommentDto: CreateCommentDto, @User() user: any) {
     return this.commentsService.create(createCommentDto, user);
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Get()
   findAll(@Query('page') page: number = 1, @Query('limit') limit: number = 10) {
     return this.commentsService.findAll(page, limit);
@@ -40,6 +43,7 @@ export class CommentsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -58,6 +62,7 @@ export class CommentsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Delete(':id')
   remove(@Param('id') id: string, @User() user: any) {
     return this.commentsService.remove(id, user);
