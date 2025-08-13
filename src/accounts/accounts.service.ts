@@ -56,11 +56,7 @@ export class AccountsService {
   }
 
   async findOne(id: string) {
-    const account = await this.accountModel
-      .findById(id)
-      .populate('account', 'username avatarUrl')
-      .lean()
-      .exec();
+    const account = await this.accountModel.findById(id).lean().exec();
     if (!account) {
       throw new NotFoundException(`Account with ID ${id} not found`);
     }
@@ -71,11 +67,7 @@ export class AccountsService {
   }
 
   async findOneWithoutOmittedField(id: string) {
-    const account = await this.accountModel
-      .findById(id)
-      .populate('account', 'username avatarUrl')
-      .lean()
-      .exec();
+    const account = await this.accountModel.findById(id).lean().exec();
     if (!account) {
       throw new NotFoundException(`Account with ID ${id} not found`);
     }
