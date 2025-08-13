@@ -4,7 +4,7 @@ import { LoginDto } from './dto/login.dto';
 import { SignupDto } from '../common/dto/signup.dto';
 import { Account } from '../accounts/entities/account.entity';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { User } from 'src/common/decorator/user.decorator';
+import { User } from '../common/decorator/user.decorator';
 
 @Controller('auth')
 export class AuthController {
