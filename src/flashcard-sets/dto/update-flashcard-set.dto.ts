@@ -8,7 +8,6 @@ class FlashcardDto {
     example: new mongoose.Types.ObjectId().toHexString(),
   })
   @IsString()
-  @IsNotEmpty()
   flashcardId: string;
 
   @ApiProperty({

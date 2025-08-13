@@ -1,3 +1,4 @@
+import { Flashcard } from './../flashcards/entities/flashcard.entity';
 import {
   BadRequestException,
   forwardRef,
@@ -163,17 +164,54 @@ export class FlashcardSetsService {
     updateFlashcardSetDto.description =
       updateFlashcardSetDto.description ?? flashcardSet.description;
 
-    if (account._id !== flashcardSet.account) {
+    if (String(user.accountId) !== String(flashcardSet.account._id)) {
       throw new UnauthorizedException(
         'Only Author Can Update This Flashcard Set',
       );
     }
 
-    const result: UpdateResult = await this.flashcardSetModel.updateOne(
-      { _id: id },
-      { $set: updateFlashcardSetDto },
-    );
+    if (updateFlashcardSetDto.flashcards?.length) {
+      await Promise.all(
+        updateFlashcardSetDto.flashcards.map(async (fc) => {
+          if (fc.flashcardId) {
+            const existing = await this.flashcardService.findOneWithoutNotFound(
+              fc.flashcardId,
+            );
 
+            if (existing) {
+              return this.flashcardService.update(fc.flashcardId, {
+                term: fc.term,
+                definition: fc.definition,
+              });
+            }
+          }
+
+          const newFlashcard = await this.flashcardService.create(
+            {
+              term: fc.term,
+              definition: fc.definition,
+              flashcardSetId: flashcardSet._id.toHexString(),
+            },
+            user,
+          );
+
+          await this.flashcardSetModel.updateOne(
+            { _id: flashcardSet._id },
+            { $push: { flashcards: newFlashcard._id } },
+          );
+        }),
+      );
+    }
+
+    const result = await this.flashcardSetModel.updateOne(
+      { _id: id },
+      {
+        $set: {
+          title: updateFlashcardSetDto.title,
+          description: updateFlashcardSetDto.description,
+        },
+      },
+    );
     if (!result.acknowledged) {
       throw new InternalServerErrorException('Flashcard Set Update Failed');
     }
@@ -215,26 +253,6 @@ export class FlashcardSetsService {
     const flashcardSet: FlashcardSet | null = await this.findOne(id);
 
     flashcardSet.likes = flashcardSet.likes + 1;
-
-    const result: UpdateResult = await this.flashcardSetModel.updateOne(
-      { _id: id },
-      { $set: flashcardSet },
-    );
-
-    if (!result.acknowledged) {
-      throw new InternalServerErrorException('Flashcard Set Deletion Failed');
-    }
-
-    return result;
-  }
-
-  async removeLike(id: string) {
-    const flashcardSet: FlashcardSet | null = await this.findOne(id);
-
-    flashcardSet.likes = flashcardSet.likes - 1;
-    if (flashcardSet.likes <= 0) {
-      flashcardSet.likes = 0;
-    }
 
     const result: UpdateResult = await this.flashcardSetModel.updateOne(
       { _id: id },

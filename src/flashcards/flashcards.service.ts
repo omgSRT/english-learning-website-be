@@ -90,7 +90,11 @@ export class FlashcardsService {
       throw new NotFoundException(`Flashcard Set with ID ${id} not found`);
     }
 
-    return flashcard.toObject();
+    return flashcard;
+  }
+  async findOneWithoutNotFound(id: string) {
+    const flashcard = await this.flashcardModel.findById(id).lean().exec();
+    return flashcard;
   }
 
   async update(id: string, updateFlashcardDto: UpdateFlashcardDto) {
@@ -128,7 +132,9 @@ export class FlashcardsService {
       throw new NotFoundException('Flashcard Set Not Found');
     }
 
-    const result: DeleteResult = await this.flashcardModel.deleteOne(flashcard);
+    const result: DeleteResult = await this.flashcardModel.deleteOne(
+      flashcard.toObject(),
+    );
 
     if (!result.acknowledged) {
       throw new InternalServerErrorException('Flashcard Deletion Failed');
