@@ -87,10 +87,7 @@ export class FlashcardSetsService {
     }
 
     await newFlashcardSet.populate('account', 'username avatarUrl');
-    await newFlashcardSet.populate(
-      'flashcards',
-      'flashcardType term definition',
-    );
+    await newFlashcardSet.populate('flashcards', 'id term definition like');
 
     await this.accountService.saveAccount(account, newFlashcardSet._id);
     return newFlashcardSet.toObject();
@@ -119,7 +116,7 @@ export class FlashcardSetsService {
       .skip(skip)
       .limit(limit)
       .populate('account', 'username avatarUrl')
-      .populate('flashcards', 'id flashcardType term definition')
+      .populate('flashcards', 'id term definition like')
       .lean()
       .exec();
 
@@ -140,6 +137,7 @@ export class FlashcardSetsService {
     const flashcardSet = await this.flashcardSetModel
       .findById(id)
       .populate('account', 'username avatarUrl')
+      .populate('flashcards', 'id term definition like')
       .lean()
       .exec();
     if (!flashcardSet) {
