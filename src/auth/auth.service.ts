@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -10,6 +11,7 @@ import { LoginDto } from './dto/login.dto';
 import bcrypt from 'bcryptjs';
 import { Account } from '../accounts/entities/account.entity';
 import { SignupDto } from '../common/dto/signup.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -77,5 +79,37 @@ export class AuthService {
 
     const { password, ...newAccountWithoutPassword } = newAccount;
     return newAccountWithoutPassword;
+  }
+
+  async changePassword(dto: ChangePasswordDto, user: any) {
+    const account = await this.accountService.findOneWithoutOmittedField(
+      user.accountId,
+    );
+    if (!account) throw new NotFoundException('Account Not Found');
+
+    const isPasswordMatched = await bcrypt.compare(
+      dto.oldPassword,
+      account.password,
+    );
+    if (!isPasswordMatched) {
+      throw new BadRequestException('Old Password Is Not Matched');
+    }
+
+    const isNewPasswordMatched = dto.newPassword === dto.confirmNewPassword;
+    if (!isNewPasswordMatched) {
+      throw new BadRequestException(
+        'Confirm Password And New Password Are Not Matched',
+      );
+    }
+
+    const result = await this.accountService.updateAccountPassword(
+      user.accountId,
+      dto.newPassword,
+    );
+    if (!result) {
+      throw new InternalServerErrorException('Password Cannot Be Updated');
+    }
+
+    return result;
   }
 }

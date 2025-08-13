@@ -10,7 +10,6 @@ import { Flashcard, FlashcardDocument } from './entities/flashcard.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { DeleteResult, Model, UpdateResult } from 'mongoose';
 import { FlashcardSetsService } from 'src/flashcard-sets/flashcard-sets.service';
-import { FlashcardTypeEnum } from './entities/enum/flashcard.enum';
 
 @Injectable()
 export class FlashcardsService {
@@ -34,10 +33,6 @@ export class FlashcardsService {
       throw new BadRequestException(
         'You Are Not The Author Of This Flashcard Set',
       );
-    }
-
-    if (!createFlashcardDto.flashcardType) {
-      createFlashcardDto.flashcardType = FlashcardTypeEnum.VOCABULARY;
     }
 
     const newFlashcard = (

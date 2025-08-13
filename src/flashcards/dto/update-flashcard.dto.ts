@@ -3,13 +3,6 @@ import { IsNotEmpty, IsString } from 'class-validator';
 
 export class UpdateFlashcardDto {
   @ApiProperty({
-    example: 'vocabulary',
-  })
-  @IsString()
-  @IsNotEmpty()
-  flashcardType: string;
-
-  @ApiProperty({
     example: 'An English Word',
   })
   @IsString()

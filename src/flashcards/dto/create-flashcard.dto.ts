@@ -4,13 +4,6 @@ import mongoose from 'mongoose';
 
 export class CreateFlashcardDto {
   @ApiProperty({
-    example: 'vocabulary',
-  })
-  @IsString()
-  @IsNotEmpty()
-  flashcardType: string;
-
-  @ApiProperty({
     example: 'An English Word',
   })
   @IsString()

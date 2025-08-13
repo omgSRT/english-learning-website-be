@@ -9,6 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Account, AccountDocument } from './entities/account.entity';
 import { Model } from 'mongoose';
 import { SignupDto } from '../common/dto/signup.dto';
+import bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AccountsService {
@@ -67,6 +68,36 @@ export class AccountsService {
     const { password, ...omittedAccount } = account.toObject();
 
     return omittedAccount;
+  }
+
+  async findOneWithoutOmittedField(id: string) {
+    const account = await this.accountModel
+      .findById(id)
+      .populate('account', 'username avatarUrl')
+      .lean()
+      .exec();
+    if (!account) {
+      throw new NotFoundException(`Account with ID ${id} not found`);
+    }
+
+    return account.toObject();
+  }
+
+  async updateAccountPassword(id: string, password: string) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const updatedAccount = await this.accountModel.findByIdAndUpdate(
+      id,
+      { password: hashedPassword },
+      { new: true },
+    );
+
+    if (!updatedAccount) {
+      throw new NotFoundException(`Account with ID ${id} not found`);
+      // return false;
+    }
+
+    return updatedAccount;
   }
 
   update(id: number, updateAccountDto: UpdateAccountDto) {

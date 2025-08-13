@@ -1,8 +1,10 @@
-import { Body, Controller, HttpCode, Post, Res } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { SignupDto } from '../common/dto/signup.dto';
 import { Account } from '../accounts/entities/account.entity';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { User } from 'src/common/decorator/user.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -17,5 +19,10 @@ export class AuthController {
   @Post('/signup')
   async signup(@Body() signupDto: SignupDto): Promise<Partial<Account>> {
     return await this.authService.signUp(signupDto);
+  }
+
+  @Post('/change-password')
+  async changePassword(@Body() dto: ChangePasswordDto, @User() user: any) {
+    return await this.authService.changePassword(dto, user);
   }
 }
