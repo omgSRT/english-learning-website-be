@@ -61,7 +61,7 @@ export class AccountsService {
       throw new NotFoundException(`Account with ID ${id} not found`);
     }
 
-    const { password, ...omittedAccount } = account.toObject();
+    const { password, ...omittedAccount } = account;
 
     return omittedAccount;
   }
@@ -72,7 +72,7 @@ export class AccountsService {
       throw new NotFoundException(`Account with ID ${id} not found`);
     }
 
-    return account.toObject();
+    return account;
   }
 
   async updateAccountPassword(id: string, password: string) {
