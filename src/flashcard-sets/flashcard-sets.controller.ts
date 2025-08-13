@@ -14,7 +14,7 @@ import { CreateFlashcardSetDto } from './dto/create-flashcard-set.dto';
 import { UpdateFlashcardSetDto } from './dto/update-flashcard-set.dto';
 import { User } from '../common/decorator/user.decorator';
 import { JwtAuthGuard } from '../auth/jwt/jwt.guard';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse } from '@nestjs/swagger';
 
 @Controller('flashcard-sets')
 export class FlashcardSetsController {
@@ -23,6 +23,7 @@ export class FlashcardSetsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @Post()
+  @ApiCreatedResponse()
   create(
     @Body() createFlashcardSetDto: CreateFlashcardSetDto,
     @User() user: any,

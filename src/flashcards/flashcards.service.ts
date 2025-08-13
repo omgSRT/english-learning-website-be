@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -9,27 +11,25 @@ import { UpdateFlashcardDto } from './dto/update-flashcard.dto';
 import { Flashcard, FlashcardDocument } from './entities/flashcard.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { DeleteResult, Model, UpdateResult } from 'mongoose';
-import { FlashcardSetsService } from 'src/flashcard-sets/flashcard-sets.service';
+import { FlashcardSetsService } from '../flashcard-sets/flashcard-sets.service';
 
 @Injectable()
 export class FlashcardsService {
   constructor(
     @InjectModel(Flashcard.name)
     private readonly flashcardModel: Model<FlashcardDocument>,
+    @Inject(forwardRef(() => FlashcardSetsService))
     private readonly flashcardSetService: FlashcardSetsService,
   ) {}
 
-  async create(
-    createFlashcardDto: CreateFlashcardDto,
-    user: any,
-  ): Promise<Flashcard> {
+  async create(createFlashcardDto: CreateFlashcardDto, user: any) {
     const flashcardSet = await this.flashcardSetService.findOne(
       createFlashcardDto.flashcardSetId,
     );
     if (!flashcardSet) {
       throw new NotFoundException('Flashcard Set Not Found');
     }
-    if (user.accountId !== flashcardSet.account.toHexString()) {
+    if (String(user.accountId) !== String(flashcardSet.account._id)) {
       throw new BadRequestException(
         'You Are Not The Author Of This Flashcard Set',
       );

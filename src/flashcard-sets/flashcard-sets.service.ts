@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -12,16 +14,29 @@ import {
   FlashcardSet,
   FlashcardSetDocument,
 } from './entities/flashcard-set.entity';
-import { DeleteResult, Model, Types, UpdateResult } from 'mongoose';
-import { AccountsService } from 'src/accounts/accounts.service';
+import { DeleteResult, Model, UpdateResult } from 'mongoose';
+import { AccountsService } from '../accounts/accounts.service';
+import { FlashcardsService } from '../flashcards/flashcards.service';
+import { ModuleRef } from '@nestjs/core';
 
 @Injectable()
 export class FlashcardSetsService {
+  private flashcardService: FlashcardsService;
+
   constructor(
     @InjectModel(FlashcardSet.name)
     private readonly flashcardSetModel: Model<FlashcardSetDocument>,
     private readonly accountService: AccountsService,
+    // @Inject(forwardRef(() => FlashcardsService))
+    // private readonly flashcardService: FlashcardsService,
+    private readonly moduleRef: ModuleRef,
   ) {}
+
+  async onModuleInit() {
+    this.flashcardService = await this.moduleRef.get(FlashcardsService, {
+      strict: false,
+    });
+  }
 
   async create(
     createFlashcardSetDto: CreateFlashcardSetDto,
@@ -42,14 +57,42 @@ export class FlashcardSetsService {
         'Flashcard Set With This Title Already Exists In Your Account',
       );
     }
-    const newFlashcardSet = (
-      await this.flashcardSetModel.create({
-        ...createFlashcardSetDto,
-        account: user.accountId,
-      })
-    ).toObject();
-    account.flashcardSets.push(newFlashcardSet._id);
-    return newFlashcardSet;
+
+    const { flashcards, ...flashcardSetData } = createFlashcardSetDto;
+    const newFlashcardSet = await this.flashcardSetModel.create({
+      ...flashcardSetData,
+      account: user.accountId,
+    });
+
+    if (
+      createFlashcardSetDto.flashcards &&
+      createFlashcardSetDto.flashcards.length > 0
+    ) {
+      const newFlashcards = await Promise.all(
+        createFlashcardSetDto.flashcards.map((flashcard) =>
+          this.flashcardService.create(
+            {
+              term: flashcard.term,
+              definition: flashcard.definition,
+              flashcardSetId: newFlashcardSet._id.toHexString(),
+            },
+            user,
+          ),
+        ),
+      );
+
+      newFlashcardSet.flashcards.push(...newFlashcards.map((f) => f._id));
+      await newFlashcardSet.save();
+    }
+
+    await newFlashcardSet.populate('account', 'username avatarUrl');
+    await newFlashcardSet.populate(
+      'flashcards',
+      'flashcardType term definition',
+    );
+
+    await this.accountService.saveAccount(account, newFlashcardSet._id);
+    return newFlashcardSet.toObject();
   }
 
   async findAll(
@@ -102,7 +145,7 @@ export class FlashcardSetsService {
       throw new NotFoundException(`Flashcard Set with ID ${id} not found`);
     }
 
-    return flashcardSet.toObject();
+    return flashcardSet;
   }
 
   async update(
@@ -121,7 +164,9 @@ export class FlashcardSetsService {
       updateFlashcardSetDto.description ?? flashcardSet.description;
 
     if (account._id !== flashcardSet.account) {
-      throw new UnauthorizedException('Only Author Can Delete This Comment');
+      throw new UnauthorizedException(
+        'Only Author Can Update This Flashcard Set',
+      );
     }
 
     const result: UpdateResult = await this.flashcardSetModel.updateOne(
@@ -151,8 +196,9 @@ export class FlashcardSetsService {
       throw new NotFoundException('Flashcard Set Not Found');
     }
 
-    const result: DeleteResult =
-      await this.flashcardSetModel.deleteOne(flashcardSet);
+    const result: DeleteResult = await this.flashcardSetModel.deleteOne(
+      flashcardSet.toObject(),
+    );
 
     if (!result.acknowledged) {
       throw new InternalServerErrorException('Flashcard Set Deletion Failed');

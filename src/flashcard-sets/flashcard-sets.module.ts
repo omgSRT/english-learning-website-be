@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { FlashcardSetsService } from './flashcard-sets.service';
 import { FlashcardSetsController } from './flashcard-sets.controller';
 import {
@@ -7,6 +7,7 @@ import {
 } from './entities/flashcard-set.entity';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AccountsModule } from '../accounts/accounts.module';
+import { FlashcardsModule } from 'src/flashcards/flashcards.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AccountsModule } from '../accounts/accounts.module';
       { name: FlashcardSet.name, schema: FlashcardSetSchema },
     ]),
     AccountsModule,
+    forwardRef(() => FlashcardsModule),
   ],
   controllers: [FlashcardSetsController],
   providers: [FlashcardSetsService],

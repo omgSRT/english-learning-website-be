@@ -7,7 +7,7 @@ import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Account, AccountDocument } from './entities/account.entity';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { SignupDto } from '../common/dto/signup.dto';
 import bcrypt from 'bcryptjs';
 
@@ -73,6 +73,16 @@ export class AccountsService {
     }
 
     return account;
+  }
+
+  async saveAccount(
+    account: mongoose.Document,
+    flashcardSetId: mongoose.Types.ObjectId,
+  ): Promise<void> {
+    await this.accountModel.updateOne(
+      { _id: account._id },
+      { $push: { flashcardSets: flashcardSetId } },
+    );
   }
 
   async updateAccountPassword(id: string, password: string) {
