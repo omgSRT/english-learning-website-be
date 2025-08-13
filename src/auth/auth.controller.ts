@@ -1,10 +1,12 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { SignupDto } from '../common/dto/signup.dto';
 import { Account } from '../accounts/entities/account.entity';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { User } from '../common/decorator/user.decorator';
+import { JwtAuthGuard } from './jwt/jwt.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
@@ -21,6 +23,8 @@ export class AuthController {
     return await this.authService.signUp(signupDto);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Post('/change-password')
   async changePassword(@Body() dto: ChangePasswordDto, @User() user: any) {
     return await this.authService.changePassword(dto, user);
